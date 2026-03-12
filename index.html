@@ -47,11 +47,9 @@
     to   { transform: translate(30px, 40px) scale(1.08); }
   }
 
-  /* Grid dots */
   .grid-bg {
     position: fixed; inset: 0; z-index: 0;
-    background-image:
-      radial-gradient(circle, rgba(255,110,180,0.15) 1px, transparent 1px);
+    background-image: radial-gradient(circle, rgba(255,110,180,0.15) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none;
   }
@@ -199,6 +197,12 @@
   .card:hover::before { opacity: 1; }
   .card:hover::after { left: 120%; }
 
+  /* Card click animation - squeeze effect */
+  .card.clicking {
+    transform: scale(0.97) !important;
+    transition: transform 0.12s ease !important;
+  }
+
   .card-icon {
     width: 54px; height: 54px; border-radius: 14px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
@@ -284,16 +288,109 @@
   /* ===== Ripple ===== */
   .ripple {
     position: absolute; border-radius: 50%;
-    background: rgba(255,110,180,0.3);
-    transform: scale(0); animation: ripple-anim 0.6s linear;
-    pointer-events: none;
+    background: rgba(255,110,180,0.35);
+    transform: scale(0); animation: ripple-anim 0.7s ease-out forwards;
+    pointer-events: none; z-index: 5;
   }
   @keyframes ripple-anim {
-    to { transform: scale(4); opacity: 0; }
+    to { transform: scale(5); opacity: 0; }
+  }
+
+  /* ===== PAGE TRANSITION OVERLAY ===== */
+  #page-transition {
+    position: fixed; inset: 0; z-index: 9999;
+    pointer-events: none;
+    display: flex; flex-direction: column;
+  }
+
+  /* 3 horizontal bars that sweep left-to-right */
+  .pt-bar {
+    flex: 1;
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+  .pt-bar:nth-child(1) { background: linear-gradient(90deg, #c2185b, #e91e8c); }
+  .pt-bar:nth-child(2) { background: linear-gradient(90deg, #e91e8c, #ff6eb4); }
+  .pt-bar:nth-child(3) { background: linear-gradient(90deg, #ff6eb4, #c2185b); }
+
+  /* sweeping IN */
+  #page-transition.sweep-in .pt-bar {
+    animation: bar-in 0.45s cubic-bezier(0.77,0,0.18,1) forwards;
+  }
+  #page-transition.sweep-in .pt-bar:nth-child(1) { animation-delay: 0s; }
+  #page-transition.sweep-in .pt-bar:nth-child(2) { animation-delay: 0.06s; }
+  #page-transition.sweep-in .pt-bar:nth-child(3) { animation-delay: 0.12s; }
+
+  @keyframes bar-in {
+    from { transform: scaleX(0); transform-origin: left center; }
+    to   { transform: scaleX(1); transform-origin: left center; }
+  }
+
+  /* logo reveal in center of overlay */
+  .pt-logo {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; gap: 12px;
+    pointer-events: none;
+  }
+  .pt-logo-icon {
+    font-size: 42px;
+    filter: drop-shadow(0 0 20px rgba(255,255,255,0.8));
+    transform: scale(0.5);
+  }
+  .pt-logo-text {
+    font-family: 'Kanit', sans-serif;
+    font-size: 14px; letter-spacing: 3px;
+    color: rgba(255,255,255,0.9);
+    text-transform: uppercase;
+  }
+  .pt-loading-bar {
+    width: 120px; height: 2px;
+    background: rgba(255,255,255,0.2); border-radius: 2px; overflow: hidden;
+  }
+  .pt-loading-fill {
+    height: 100%;
+    background: #fff;
+    width: 0%;
+    border-radius: 2px;
+  }
+
+  #page-transition.show-logo .pt-logo {
+    animation: logo-pop 0.35s cubic-bezier(.34,1.56,.64,1) 0.4s forwards;
+  }
+  #page-transition.show-logo .pt-logo-icon {
+    animation: icon-bounce 0.5s cubic-bezier(.34,1.56,.64,1) 0.45s both;
+  }
+  #page-transition.show-logo .pt-loading-fill {
+    animation: fill-bar 0.6s ease 0.55s forwards;
+  }
+
+  @keyframes logo-pop {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes icon-bounce {
+    from { transform: scale(0.3); }
+    to   { transform: scale(1); }
+  }
+  @keyframes fill-bar {
+    from { width: 0%; } to { width: 100%; }
   }
 </style>
 </head>
 <body>
+
+<!-- Page Transition Overlay -->
+<div id="page-transition">
+  <div class="pt-bar"></div>
+  <div class="pt-bar"></div>
+  <div class="pt-bar"></div>
+  <div class="pt-logo">
+    <div class="pt-logo-icon" id="pt-icon">🎓</div>
+    <div class="pt-logo-text" id="pt-text">กำลังเปิดระบบ...</div>
+    <div class="pt-loading-bar"><div class="pt-loading-fill"></div></div>
+  </div>
+</div>
 
 <div class="bg-wrap">
   <div class="orb orb1"></div>
@@ -323,7 +420,8 @@
 
   <div class="cards">
 
-    <a class="card primary" href="https://nonthaphathr.github.io/recruit2026/" target="_blank" rel="noopener">
+    <a class="card primary" href="https://nonthaphathr.github.io/recruit2026/" target="_blank" rel="noopener"
+       data-icon="🎓" data-label="กำลังเปิดระบบสมัครเรียน...">
       <div class="card-icon">🎓</div>
       <div class="card-content">
         <div class="card-label">สำหรับนักเรียน / ผู้ปกครอง</div>
@@ -333,7 +431,8 @@
       <div class="card-arrow">→</div>
     </a>
 
-    <a class="card secondary" href="https://nonthaphathr.github.io/recruit2026/staff.html" target="_blank" rel="noopener">
+    <a class="card secondary" href="https://nonthaphathr.github.io/recruit2026/staff.html" target="_blank" rel="noopener"
+       data-icon="👨‍💼" data-label="กำลังเปิดระบบจัดการ...">
       <div class="card-icon">👨‍💼</div>
       <div class="card-content">
         <div class="card-label">สำหรับครูและเจ้าหน้าที่</div>
@@ -371,16 +470,88 @@
     container.appendChild(p);
   }
 
-  // Ripple effect on cards
+  // ===== Page Transition =====
+  const overlay = document.getElementById('page-transition');
+  const ptIcon  = document.getElementById('pt-icon');
+  const ptText  = document.getElementById('pt-text');
+
+  function doTransition(url, icon, label) {
+    // Update overlay content
+    ptIcon.textContent = icon;
+    ptText.textContent = label;
+
+    // Enable pointer events to block interaction
+    overlay.style.pointerEvents = 'all';
+
+    // Start sweep-in
+    overlay.classList.add('sweep-in');
+
+    // Show logo after bars cover screen
+    setTimeout(() => {
+      overlay.classList.add('show-logo');
+    }, 300);
+
+    // Navigate after animation completes
+    setTimeout(() => {
+      window.open(url, '_blank');
+      // Start sweep-out after small delay
+      setTimeout(() => sweepOut(), 300);
+    }, 900);
+  }
+
+  function sweepOut() {
+    // Reset bars to sweep from right
+    overlay.querySelectorAll('.pt-bar').forEach((bar, i) => {
+      bar.style.transition = `transform ${0.4 + i*0.06}s cubic-bezier(0.77,0,0.18,1) ${i*0.07}s`;
+      bar.style.transformOrigin = 'right center';
+      bar.style.transform = 'scaleX(0)';
+    });
+    overlay.querySelector('.pt-logo').style.opacity = '0';
+    overlay.querySelector('.pt-logo').style.transition = 'opacity 0.2s';
+
+    setTimeout(() => {
+      overlay.style.pointerEvents = 'none';
+      // Reset all for next use
+      overlay.classList.remove('sweep-in','show-logo');
+      overlay.querySelectorAll('.pt-bar').forEach(bar => {
+        bar.style.transition = '';
+        bar.style.transformOrigin = '';
+        bar.style.transform = '';
+      });
+      overlay.querySelector('.pt-logo').style.opacity = '';
+      overlay.querySelector('.pt-logo').style.transition = '';
+      // Reset fill bar
+      const fill = overlay.querySelector('.pt-loading-fill');
+      fill.style.animation = 'none';
+      fill.offsetHeight; // reflow
+      fill.style.animation = '';
+    }, 700);
+  }
+
+  // Intercept card clicks
   document.querySelectorAll('.card').forEach(card => {
     card.addEventListener('click', function(e) {
+      e.preventDefault();
+
+      const url   = this.getAttribute('href');
+      const icon  = this.dataset.icon  || '🔗';
+      const label = this.dataset.label || 'กำลังโหลด...';
+
+      // Ripple effect
       const rect = card.getBoundingClientRect();
       const r = document.createElement('span');
       r.className = 'ripple';
       const size = Math.max(card.clientWidth, card.clientHeight);
       r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
       card.appendChild(r);
-      setTimeout(() => r.remove(), 600);
+
+      // Card squeeze
+      card.classList.add('clicking');
+      setTimeout(() => card.classList.remove('clicking'), 150);
+      setTimeout(() => r.remove(), 700);
+
+      // Trigger transition after short delay
+      setTimeout(() => doTransition(url, icon, label), 120);
     });
   });
 </script>
